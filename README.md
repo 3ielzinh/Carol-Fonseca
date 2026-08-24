@@ -2,11 +2,11 @@
 
 Reformulação visual da página de vendas da formação **Nasce um Novo Líder**, de Carol Fonseca.
 
-## Protótipo
+## Página
 
-Os arquivos da página estão em `outputs/nasce-um-novo-lider/`.
+Os arquivos da página estão na raiz do repositório para permitir publicação direta na Vercel.
 
-Abra `outputs/nasce-um-novo-lider/index.html` para visualizar a versão local.
+Abra `index.html` para visualizar a versão local.
 
 ## Identidade visual
 
