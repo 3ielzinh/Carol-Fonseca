@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/bio",
-      "destination": "/links.html"
+      "destination": "/links"
     }
   ],
   "headers": [
