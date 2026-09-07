@@ -6,6 +6,11 @@ Reformulação visual da página de vendas da formação **Nasce um Novo Líder*
 
 Os arquivos da página estão na raiz do repositório para permitir publicação direta na Vercel.
 
+Rotas publicadas:
+
+- `/` — landing page da formação Nasce um Novo Líder
+- `/links` — página de links para a bio do Instagram
+
 Execute `npm run dev` e abra `http://127.0.0.1:8765` para visualizar a versão local com o pré-checkout funcional. Durante o desenvolvimento, os cadastros são gravados em `work/leads-dev.ndjson`.
 
 ## Pré-checkout e leads
