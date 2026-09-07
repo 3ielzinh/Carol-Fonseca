@@ -3,3 +3,6 @@ outputs/*.zip
 node_modules/
 .env
 .env.local
+
+.vercel
+.env*

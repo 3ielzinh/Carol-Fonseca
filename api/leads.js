@@ -13,7 +13,9 @@ export default async function handler(request, response) {
   }
 
   const localLeadStore = process.env.LOCAL_LEAD_STORE;
-  if (!localLeadStore && (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN)) {
+  const redisUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+  if (!localLeadStore && (!redisUrl || !redisToken)) {
     console.error('Upstash Redis environment variables are not configured.');
     return response.status(503).json({ error: 'O cadastro está temporariamente indisponível.' });
   }
@@ -63,7 +65,7 @@ export default async function handler(request, response) {
     return response.status(201).json({ id: lead.id, webhookSynced: false, local: true });
   }
 
-  const redis = Redis.fromEnv();
+  const redis = new Redis({ url: redisUrl, token: redisToken });
   const forwardedIp = clean(request.headers['x-forwarded-for']?.split(',')[0], 64);
   const rateKey = `lead-rate:${createHash('sha256').update(forwardedIp || 'unknown').digest('hex').slice(0, 24)}`;
   const attempts = await redis.incr(rateKey);
