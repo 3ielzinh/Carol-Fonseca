@@ -25,21 +25,22 @@ h1 em{color:var(--lime);font-weight:400}
 .link-area-head span{font-size:20px;color:var(--rust)}
 .bio-link{display:grid;grid-template-columns:38px minmax(0,1fr) 38px;gap:18px;align-items:center;min-height:118px;padding:22px 18px 22px 6px;border-bottom:1px solid var(--line);text-decoration:none;transition:background .3s ease,padding .3s ease,color .3s ease}
 .bio-link:first-of-type{border-top:1px solid var(--line)}
-.bio-link:hover,.bio-link:focus-visible{padding-left:18px;background:var(--white);outline:none}
+.bio-link:focus-visible{padding-left:18px;background:var(--white);outline:none}
 .link-number{align-self:start;padding-top:5px;color:var(--rust);font:600 9px var(--label)}
 .link-copy{display:flex;flex-direction:column;min-width:0}
 .link-copy small{margin-bottom:6px;color:#777;font:600 8px var(--label);letter-spacing:.09em;text-transform:uppercase}
 .link-copy strong{font:400 clamp(23px,2.8vw,38px)/1.05 var(--serif);letter-spacing:-.035em}
 .link-copy em{margin-top:8px;color:#666;font-size:11px;font-style:normal}
-.link-arrow{display:grid;place-items:center;width:34px;height:34px;border:1px solid #B6B5B0;border-radius:50%;font-size:17px;transition:transform .3s,background .3s,color .3s}
-.bio-link:hover .link-arrow,.bio-link:focus-visible .link-arrow{transform:rotate(45deg);background:var(--ink);color:var(--lime)}
+.link-arrow{display:grid;place-items:center;justify-self:end;width:34px;height:34px;border:1px solid #B6B5B0;border-radius:50%;line-height:0;transition:transform .3s,background .3s,color .3s}
+.link-arrow svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.bio-link:focus-visible .link-arrow{transform:rotate(45deg);background:var(--ink);color:var(--lime)}
 .bio-link-featured{margin:0 0 12px;padding:28px 22px 28px 14px;border:0!important;background:var(--lime)}
 .bio-link-featured .link-number,.bio-link-featured .link-copy small{color:#485900}
 .bio-link-featured .link-copy strong{font-size:clamp(30px,3.5vw,50px)}
 .bio-link-featured .link-copy em{color:#334000}
 .bio-link-featured .link-arrow{border-color:var(--ink);background:var(--ink);color:var(--lime)}
-.bio-link-featured:hover,.bio-link-featured:focus-visible{padding-left:24px;background:var(--rust);color:var(--white)}
-.bio-link-featured:hover .link-number,.bio-link-featured:hover small,.bio-link-featured:hover em,.bio-link-featured:focus-visible .link-number,.bio-link-featured:focus-visible small,.bio-link-featured:focus-visible em{color:#fff}
+.bio-link-featured:focus-visible{padding-left:24px;background:var(--rust);color:var(--white)}
+.bio-link-featured:focus-visible .link-number,.bio-link-featured:focus-visible small,.bio-link-featured:focus-visible em{color:#fff}
 .bio-link-secondary{margin-top:26px;border:1px solid var(--ink)!important;padding-inline:14px;background:transparent}
 footer{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;margin-top:68px;padding-top:24px;border-top:1px solid var(--ink)}
 .footer-mark{width:38px;height:38px;display:grid;place-items:center;border-radius:50%;background:var(--rust);color:var(--white);font:600 9px var(--label)}
@@ -62,5 +63,11 @@ footer a{font:600 8px var(--label);letter-spacing:.06em;text-transform:uppercase
   .bio-link-featured .link-copy strong{font-size:32px}
   footer{grid-template-columns:auto 1fr}
   footer a{grid-column:2}
+}
+@media(hover:hover) and (pointer:fine){
+  .bio-link:hover{padding-left:18px;background:var(--white);outline:none}
+  .bio-link:hover .link-arrow{transform:rotate(45deg);background:var(--ink);color:var(--lime)}
+  .bio-link-featured:hover{padding-left:24px;background:var(--rust);color:var(--white)}
+  .bio-link-featured:hover .link-number,.bio-link-featured:hover small,.bio-link-featured:hover em{color:#fff}
 }
 @media(prefers-reduced-motion:reduce){.bio-link,.link-arrow{transition:none}}
