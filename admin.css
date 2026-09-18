@@ -1,0 +1,50 @@
+:root{--lime:#C7E53B;--rust:#AF4C0F;--ink:#0A0A0A;--gray:#EAEAEA;--white:#FFF;--muted:#767676;--sans:'Inter',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--gray);color:var(--ink);font-family:var(--sans);line-height:1.5}
+button{font-family:inherit;cursor:pointer}
+
+.admin-header{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:var(--ink);color:var(--white)}
+.admin-brand{font-weight:700;letter-spacing:.02em}
+.admin-brand em{font-style:normal;color:var(--lime)}
+.admin-header button{background:transparent;border:1px solid #444;color:var(--white);padding:8px 16px;border-radius:4px}
+.admin-header button:hover{border-color:var(--lime);color:var(--lime)}
+
+main{max-width:960px;margin:0 auto;padding:40px 20px}
+
+.login-view{display:flex;justify-content:center;padding-top:60px}
+.login-view[hidden],.panel-view[hidden]{display:none}
+#login-form{background:var(--white);padding:32px;border-radius:8px;width:min(360px,100%);box-shadow:0 8px 30px rgba(0,0,0,.08)}
+#login-form h1{margin:0 0 4px;font-size:22px}
+.hint{color:var(--muted);font-size:13px;margin:0 0 20px}
+#login-form label{display:block;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+#login-form input{width:100%;padding:11px 12px;border:1px solid #ccc;border-radius:4px;font-size:15px;margin-bottom:16px}
+#login-form button{width:100%;padding:12px;border:0;border-radius:4px;background:var(--ink);color:var(--white);font-weight:600}
+#login-form button:hover{background:var(--rust)}
+
+.error{background:#fdecea;color:#a12b1f;padding:10px 12px;border-radius:4px;font-size:13px;margin:0 0 16px}
+
+.panel-view{width:100%}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.panel-head h1{margin:0;font-size:24px}
+
+.table-wrap{overflow-x:auto;background:var(--white);border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.05)}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--gray)}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+tbody tr:last-child td{border-bottom:0}
+
+.status-badge{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.status-badge.pending{background:#fff3cd;color:#8a6400}
+.status-badge.paid{background:#d9f3d0;color:#2c6b1f}
+
+.toggle-payment{margin-left:8px;background:transparent;border:1px solid #ccc;border-radius:4px;padding:4px 10px;font-size:12px}
+.toggle-payment:hover{border-color:var(--rust);color:var(--rust)}
+
+.pagination{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:20px}
+.pagination button{background:var(--white);border:1px solid #ccc;border-radius:4px;padding:8px 14px}
+.pagination button:disabled{opacity:.4;cursor:not-allowed}
+
+@media(max-width:600px){
+  .admin-header{padding:14px 16px}
+  main{padding:24px 12px}
+}

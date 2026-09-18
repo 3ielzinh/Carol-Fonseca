@@ -3,10 +3,16 @@ import { readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import leadHandler from '../api/leads.js';
+import adminLoginHandler from '../api/admin/login.js';
+import adminLogoutHandler from '../api/admin/logout.js';
+import adminLeadsHandler from '../api/admin/leads.js';
+import adminPaymentHandler from '../api/admin/leads/payment.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT || 8765);
 process.env.LOCAL_LEAD_STORE = process.env.LOCAL_LEAD_STORE || path.join(root, 'work', 'leads-dev.ndjson');
+process.env.ADMIN_SESSION_SECRET = process.env.ADMIN_SESSION_SECRET || 'dev-only-session-secret';
+if (!process.env.ADMIN_PANEL_PASSWORD) process.env.ADMIN_PANEL_PASSWORD = 'dev123';
 
 const mimeTypes = {
   '.css': 'text/css; charset=utf-8',
@@ -35,10 +41,19 @@ const readBody = async (request) => {
   return Buffer.concat(chunks).toString('utf8');
 };
 
+const apiRoutes = {
+  '/api/leads': leadHandler,
+  '/api/admin/login': adminLoginHandler,
+  '/api/admin/logout': adminLogoutHandler,
+  '/api/admin/leads': adminLeadsHandler,
+  '/api/admin/leads/payment': adminPaymentHandler
+};
+
 const server = createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host || 'localhost'}`);
+  const apiHandler = apiRoutes[url.pathname];
 
-  if (url.pathname === '/api/leads') {
+  if (apiHandler) {
     try {
       const body = request.method === 'POST' ? await readBody(request) : '';
       const apiResponse = {
@@ -53,10 +68,10 @@ const server = createServer(async (request, response) => {
           return this;
         }
       };
-      await leadHandler({ method: request.method, headers: request.headers, body }, apiResponse);
+      await apiHandler({ method: request.method, headers: request.headers, url: request.url, body }, apiResponse);
     } catch (error) {
-      console.error('[dev-server] lead request failed', error);
-      if (!response.headersSent) sendJson(response, 500, { error: 'Não foi possível salvar seus dados agora.' });
+      console.error('[dev-server] api request failed', error);
+      if (!response.headersSent) sendJson(response, 500, { error: 'Não foi possível processar a solicitação agora.' });
       else response.end();
     }
     return;
@@ -88,4 +103,5 @@ const server = createServer(async (request, response) => {
 server.listen(port, '127.0.0.1', () => {
   console.log(`[dev-server] aplicação: http://127.0.0.1:${port}`);
   console.log(`[dev-server] leads locais: ${process.env.LOCAL_LEAD_STORE}`);
+  console.log(`[dev-server] painel admin: http://127.0.0.1:${port}/admin.html (senha: ${process.env.ADMIN_PANEL_PASSWORD})`);
 });

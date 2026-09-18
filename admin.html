@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Painel | Carol Fonseca</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header class="admin-header">
+    <span class="admin-brand">CF <em>Painel</em></span>
+    <button id="logout-button" type="button" hidden>Sair</button>
+  </header>
+
+  <main>
+    <section id="login-view" class="login-view">
+      <form id="login-form">
+        <h1>Entrar</h1>
+        <p class="hint">Painel de pré-checkouts e pagamentos.</p>
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <p id="login-error" class="error" role="alert" hidden></p>
+        <button type="submit">Entrar</button>
+      </form>
+    </section>
+
+    <section id="panel-view" class="panel-view" hidden>
+      <div class="panel-head">
+        <h1>Pré-checkouts</h1>
+        <p id="panel-status" class="hint"></p>
+      </div>
+      <p id="panel-error" class="error" role="alert" hidden></p>
+      <div class="table-wrap">
+        <table id="leads-table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>WhatsApp</th>
+              <th>E-mail</th>
+              <th>Cargo</th>
+              <th>Data</th>
+              <th>Pagamento</th>
+            </tr>
+          </thead>
+          <tbody id="leads-body"></tbody>
+        </table>
+      </div>
+      <p id="empty-state" class="hint" hidden>Nenhum pré-checkout registrado ainda.</p>
+      <div class="pagination">
+        <button id="prev-page" type="button" disabled>← Anterior</button>
+        <span id="page-info"></span>
+        <button id="next-page" type="button" disabled>Próxima →</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>
