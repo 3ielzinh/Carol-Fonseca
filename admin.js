@@ -61,8 +61,8 @@ function renderLeads(leads) {
       <td>${lead.email || '—'}</td>
       <td>${lead.jobTitle || '—'}</td>
       <td>${formatDate(lead.createdAt)}</td>
-      <td>
-        <span class="status-badge ${isPaid ? 'paid' : 'pending'}">${isPaid ? 'Pago' : 'Aguardando'}</span>
+      <td><span class="status ${isPaid ? 'paid' : 'pending'}">${isPaid ? 'Pago' : 'Aguardando'}</span></td>
+      <td class="col-action">
         <button class="toggle-payment" data-id="${lead.id}" data-next="${isPaid ? 'pending' : 'paid'}">
           ${isPaid ? 'Reverter' : 'Marcar pago'}
         </button>
