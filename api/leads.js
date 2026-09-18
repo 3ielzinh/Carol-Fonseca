@@ -6,6 +6,24 @@ import { Redis } from '@upstash/redis';
 const clean = (value, maxLength) => String(value || '').trim().slice(0, maxLength);
 const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
+async function alertOps(message) {
+  const url = process.env.OPS_ALERT_WEBHOOK_URL;
+  if (!url) return;
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(process.env.OPS_ALERT_WEBHOOK_SECRET ? { Authorization: `Bearer ${process.env.OPS_ALERT_WEBHOOK_SECRET}` } : {})
+      },
+      body: JSON.stringify({ source: 'api/leads', message, at: new Date().toISOString() }),
+      signal: AbortSignal.timeout(5000)
+    });
+  } catch (error) {
+    console.error('Ops alert webhook failed:', error.message);
+  }
+}
+
 export default async function handler(request, response) {
   if (request.method !== 'POST') {
     response.setHeader('Allow', 'POST');
@@ -17,6 +35,7 @@ export default async function handler(request, response) {
   const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
   if (!localLeadStore && (!redisUrl || !redisToken)) {
     console.error('Upstash Redis environment variables are not configured.');
+    await alertOps('Upstash Redis environment variables are not configured.');
     return response.status(503).json({ error: 'O cadastro está temporariamente indisponível.' });
   }
 
@@ -68,13 +87,64 @@ export default async function handler(request, response) {
   const redis = new Redis({ url: redisUrl, token: redisToken });
   const forwardedIp = clean(request.headers['x-forwarded-for']?.split(',')[0], 64);
   const rateKey = `lead-rate:${createHash('sha256').update(forwardedIp || 'unknown').digest('hex').slice(0, 24)}`;
-  const attempts = await redis.incr(rateKey);
-  if (attempts === 1) await redis.expire(rateKey, 3600);
+
+  let attempts;
+  try {
+    attempts = await redis.incr(rateKey);
+    if (attempts === 1) await redis.expire(rateKey, 3600);
+  } catch (error) {
+    console.error('Redis rate-limit check failed:', error.message);
+    await alertOps(`Redis rate-limit check failed: ${error.message}`);
+    return response.status(503).json({ error: 'O cadastro está temporariamente indisponível.' });
+  }
   if (attempts > 8) return response.status(429).json({ error: 'Muitas tentativas. Aguarde um pouco antes de tentar novamente.' });
 
-  await redis.hset(`lead:${lead.id}`, lead);
-  await redis.zadd('leads:created', { score: Date.now(), member: lead.id });
-  await redis.sadd(`leads:email:${createHash('sha256').update(lead.email).digest('hex')}`, lead.id);
+  const emailRateKey = `lead-rate-email:${createHash('sha256').update(lead.email).digest('hex').slice(0, 24)}`;
+  let emailAttempts;
+  try {
+    emailAttempts = await redis.incr(emailRateKey);
+    if (emailAttempts === 1) await redis.expire(emailRateKey, 3600);
+  } catch (error) {
+    console.error('Redis email rate-limit check failed:', error.message);
+    await alertOps(`Redis email rate-limit check failed: ${error.message}`);
+    return response.status(503).json({ error: 'O cadastro está temporariamente indisponível.' });
+  }
+  if (emailAttempts > 8) return response.status(429).json({ error: 'Muitas tentativas. Aguarde um pouco antes de tentar novamente.' });
+
+  const DEDUPE_WINDOW_MS = 24 * 60 * 60 * 1000;
+  const emailKey = `leads:email:${createHash('sha256').update(lead.email).digest('hex')}`;
+
+  try {
+    const existingIds = await redis.smembers(emailKey);
+    let recentLead = null;
+    if (existingIds.length) {
+      const existingLeads = await Promise.all(existingIds.map((id) => redis.hgetall(`lead:${id}`)));
+      recentLead = existingLeads
+        .filter((existing) => existing?.createdAt)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0] || null;
+      if (recentLead && Date.now() - new Date(recentLead.createdAt).getTime() > DEDUPE_WINDOW_MS) {
+        recentLead = null;
+      }
+    }
+
+    if (recentLead) {
+      lead.id = recentLead.id;
+      lead.createdAt = recentLead.createdAt;
+      lead.resubmitCount = Number(recentLead.resubmitCount || 0) + 1;
+      lead.updatedAt = new Date().toISOString();
+      await redis.hset(`lead:${lead.id}`, lead);
+    } else {
+      lead.resubmitCount = 0;
+      lead.updatedAt = lead.createdAt;
+      await redis.hset(`lead:${lead.id}`, lead);
+      await redis.zadd('leads:created', { score: Date.now(), member: lead.id });
+      await redis.sadd(emailKey, lead.id);
+    }
+  } catch (error) {
+    console.error('Redis lead write failed:', error.message);
+    await alertOps(`Redis lead write failed: ${error.message}`);
+    return response.status(503).json({ error: 'O cadastro está temporariamente indisponível.' });
+  }
 
   let webhookSynced = false;
   if (process.env.LEAD_WEBHOOK_URL) {

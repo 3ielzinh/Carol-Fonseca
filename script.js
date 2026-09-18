@@ -178,7 +178,7 @@ leadForm?.addEventListener('submit', async (event) => {
     formStatus.classList.add('is-success');
     sessionStorage.setItem('carol_lead_id', result.id);
     setTimeout(() => {
-      window.location.href = 'https://checkout.nubank.com.br/23cglllPWO189n1l';
+      window.location.href = `https://checkout.nubank.com.br/23cglllPWO189n1l?lead=${encodeURIComponent(result.id)}`;
     }, 500);
   } catch (error) {
     formStatus.textContent = `${error.message} Tente novamente em instantes.`;
