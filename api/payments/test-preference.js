@@ -29,10 +29,20 @@ export default async function handler(request, response) {
     const leadId = url.searchParams.get('leadId');
     if (!leadId) return response.status(400).json({ error: 'Informe leadId.' });
     const lead = await redisClient().hgetall(`lead:${leadId}`);
+
+    const accessToken = process.env.MP_ACCESS_TOKEN;
+    const searchResponse = await fetch(
+      `https://api.mercadopago.com/v1/payments/search?external_reference=${encodeURIComponent(leadId)}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const search = await searchResponse.json().catch(() => ({}));
+    const mpSidePayments = (search.results || []).map((p) => ({ id: p.id, status: p.status, status_detail: p.status_detail }));
+
     return response.status(200).json({
-      paymentStatus: lead?.paymentStatus || 'pending',
-      mpStatus: lead?.mpStatus || null,
-      mpPaymentId: lead?.mpPaymentId || null
+      redisPaymentStatus: lead?.paymentStatus || 'pending',
+      redisMpStatus: lead?.mpStatus || null,
+      redisMpPaymentId: lead?.mpPaymentId || null,
+      mercadoPagoSide: mpSidePayments
     });
   }
 
