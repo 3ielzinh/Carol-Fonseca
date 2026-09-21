@@ -30,6 +30,16 @@ export default async function handler(request, response) {
     const preferenceId = url.searchParams.get('preferenceId');
     const accessToken = process.env.MP_ACCESS_TOKEN;
 
+    const meResponse = await fetch('https://api.mercadopago.com/users/me', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
+    const me = await meResponse.json().catch(() => ({}));
+    const credentialInfo = {
+      collectorId: me.id || null,
+      isTestAccount: typeof me.email === 'string' && me.email.includes('@testuser.com'),
+      siteId: me.site_id || null
+    };
+
     let redisState = null;
     if (leadId) {
       const lead = await redisClient().hgetall(`lead:${leadId}`);
@@ -65,7 +75,7 @@ export default async function handler(request, response) {
       }));
     }
 
-    return response.status(200).json({ ...redisState, mercadoPagoSide, merchantOrder });
+    return response.status(200).json({ credentialInfo, ...redisState, mercadoPagoSide, merchantOrder });
   }
 
   if (request.method !== 'POST') {
