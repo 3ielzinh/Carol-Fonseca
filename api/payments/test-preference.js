@@ -27,23 +27,45 @@ export default async function handler(request, response) {
   if (request.method === 'GET') {
     const url = new URL(request.url || '/', 'http://localhost');
     const leadId = url.searchParams.get('leadId');
-    if (!leadId) return response.status(400).json({ error: 'Informe leadId.' });
-    const lead = await redisClient().hgetall(`lead:${leadId}`);
-
+    const preferenceId = url.searchParams.get('preferenceId');
     const accessToken = process.env.MP_ACCESS_TOKEN;
-    const searchResponse = await fetch(
-      `https://api.mercadopago.com/v1/payments/search?external_reference=${encodeURIComponent(leadId)}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const search = await searchResponse.json().catch(() => ({}));
-    const mpSidePayments = (search.results || []).map((p) => ({ id: p.id, status: p.status, status_detail: p.status_detail }));
 
-    return response.status(200).json({
-      redisPaymentStatus: lead?.paymentStatus || 'pending',
-      redisMpStatus: lead?.mpStatus || null,
-      redisMpPaymentId: lead?.mpPaymentId || null,
-      mercadoPagoSide: mpSidePayments
-    });
+    let redisState = null;
+    if (leadId) {
+      const lead = await redisClient().hgetall(`lead:${leadId}`);
+      redisState = {
+        redisPaymentStatus: lead?.paymentStatus || 'pending',
+        redisMpStatus: lead?.mpStatus || null,
+        redisMpPaymentId: lead?.mpPaymentId || null
+      };
+    }
+
+    let mercadoPagoSide = null;
+    if (leadId) {
+      const searchResponse = await fetch(
+        `https://api.mercadopago.com/v1/payments/search?external_reference=${encodeURIComponent(leadId)}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const search = await searchResponse.json().catch(() => ({}));
+      mercadoPagoSide = (search.results || []).map((p) => ({ id: p.id, status: p.status, status_detail: p.status_detail }));
+    }
+
+    let merchantOrder = null;
+    if (preferenceId) {
+      const orderResponse = await fetch(
+        `https://api.mercadopago.com/merchant_orders/search?preference_id=${encodeURIComponent(preferenceId)}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const orderSearch = await orderResponse.json().catch(() => ({}));
+      merchantOrder = (orderSearch.elements || []).map((order) => ({
+        id: order.id,
+        external_reference: order.external_reference,
+        status: order.status,
+        payments: (order.payments || []).map((p) => ({ id: p.id, status: p.status, transaction_amount: p.transaction_amount }))
+      }));
+    }
+
+    return response.status(200).json({ ...redisState, mercadoPagoSide, merchantOrder });
   }
 
   if (request.method !== 'POST') {
