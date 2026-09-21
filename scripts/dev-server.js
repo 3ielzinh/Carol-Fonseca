@@ -7,6 +7,8 @@ import adminLoginHandler from '../api/admin/login.js';
 import adminLogoutHandler from '../api/admin/logout.js';
 import adminLeadsHandler from '../api/admin/leads.js';
 import adminPaymentHandler from '../api/admin/leads/payment.js';
+import createPreferenceHandler from '../api/payments/create-preference.js';
+import paymentsWebhookHandler from '../api/payments/webhook.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT || 8765);
@@ -46,7 +48,9 @@ const apiRoutes = {
   '/api/admin/login': adminLoginHandler,
   '/api/admin/logout': adminLogoutHandler,
   '/api/admin/leads': adminLeadsHandler,
-  '/api/admin/leads/payment': adminPaymentHandler
+  '/api/admin/leads/payment': adminPaymentHandler,
+  '/api/payments/create-preference': createPreferenceHandler,
+  '/api/payments/webhook': paymentsWebhookHandler
 };
 
 const server = createServer(async (request, response) => {

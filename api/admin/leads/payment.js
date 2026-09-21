@@ -5,11 +5,11 @@ import { requireSession } from '../_session.js';
 
 const VALID_STATUSES = new Set(['pending', 'paid']);
 
-function paymentsPathFor(ndjsonPath) {
+export function paymentsPathFor(ndjsonPath) {
   return ndjsonPath.replace(/\.ndjson$/, '-payments.json');
 }
 
-async function setLocalPaymentStatus(id, status) {
+export async function setLocalPaymentStatus(id, status) {
   const ndjsonPath = process.env.LOCAL_LEAD_STORE;
   const paymentsPath = paymentsPathFor(ndjsonPath);
 

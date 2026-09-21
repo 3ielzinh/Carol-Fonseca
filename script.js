@@ -174,11 +174,21 @@ leadForm?.addEventListener('submit', async (event) => {
       source_cta: payload.sourceCta
     });
 
+    const preferenceResponse = await fetch('/api/payments/create-preference', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ leadId: result.id })
+    });
+    const preference = await preferenceResponse.json().catch(() => ({}));
+    if (!preferenceResponse.ok || !preference.initPoint) {
+      throw new Error(preference.error || 'Não foi possível abrir o checkout agora.');
+    }
+
     formStatus.textContent = 'Dados salvos. Abrindo o checkout seguro para concluir o pagamento…';
     formStatus.classList.add('is-success');
     sessionStorage.setItem('carol_lead_id', result.id);
     setTimeout(() => {
-      window.location.href = `https://checkout.nubank.com.br/23cglllPWO189n1l?lead=${encodeURIComponent(result.id)}`;
+      window.location.href = preference.initPoint;
     }, 500);
   } catch (error) {
     formStatus.textContent = `${error.message} Tente novamente em instantes.`;
