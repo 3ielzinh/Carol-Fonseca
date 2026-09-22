@@ -75,7 +75,25 @@ export default async function handler(request, response) {
       }));
     }
 
-    return response.status(200).json({ credentialInfo, ...redisState, mercadoPagoSide, merchantOrder });
+    let paymentsOnDate = null;
+    const dateParam = url.searchParams.get('date');
+    if (dateParam) {
+      const beginDate = `${dateParam}T00:00:00.000-03:00`;
+      const endDate = `${dateParam}T23:59:59.999-03:00`;
+      const dateResponse = await fetch(
+        `https://api.mercadopago.com/v1/payments/search?range=date_created&begin_date=${encodeURIComponent(beginDate)}&end_date=${encodeURIComponent(endDate)}&sort=date_created&criteria=desc&limit=10`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const dateSearch = await dateResponse.json().catch(() => ({}));
+      paymentsOnDate = (dateSearch.results || []).map((p) => ({
+        id: p.id,
+        status: p.status,
+        external_reference: p.external_reference,
+        date_created: p.date_created
+      }));
+    }
+
+    return response.status(200).json({ credentialInfo, ...redisState, mercadoPagoSide, merchantOrder, paymentsOnDate });
   }
 
   if (request.method !== 'POST') {
