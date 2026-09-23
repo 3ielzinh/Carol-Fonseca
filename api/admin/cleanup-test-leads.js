@@ -26,12 +26,21 @@ export default async function handler(request, response) {
   }
 
   const redis = redisClient();
-  const ids = await redis.zrange('leads:created', 0, -1);
-  const leads = await Promise.all(ids.map((id) => redis.hgetall(`lead:${id}`)));
-  const testLeads = leads.filter(isTestLead);
+  const indexedIds = await redis.zrange('leads:created', 0, -1);
+  const indexedLeads = await Promise.all(indexedIds.map((id) => redis.hgetall(`lead:${id}`)));
+  const testLeads = indexedLeads.filter(isTestLead);
+
+  const orphanKeys = await redis.keys('lead:test-onecent-*');
+  const indexedIdSet = new Set(indexedIds);
+  const orphanIds = orphanKeys
+    .map((key) => key.slice('lead:'.length))
+    .filter((id) => !indexedIdSet.has(id));
 
   if (request.method === 'GET') {
-    return response.status(200).json({ matched: testLeads.length, ids: testLeads.map((l) => l.id) });
+    return response.status(200).json({
+      matched: testLeads.length + orphanIds.length,
+      ids: [...testLeads.map((l) => l.id), ...orphanIds]
+    });
   }
 
   for (const lead of testLeads) {
@@ -42,6 +51,10 @@ export default async function handler(request, response) {
       await redis.srem(emailKey, lead.id);
     }
   }
+  for (const id of orphanIds) {
+    await redis.del(`lead:${id}`);
+  }
 
-  return response.status(200).json({ deleted: testLeads.length, ids: testLeads.map((l) => l.id) });
+  const deletedIds = [...testLeads.map((l) => l.id), ...orphanIds];
+  return response.status(200).json({ deleted: deletedIds.length, ids: deletedIds });
 }
