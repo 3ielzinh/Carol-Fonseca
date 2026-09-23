@@ -9,7 +9,8 @@
 .thankyou-card{max-width:640px}
 .thankyou-card h1{font:700 clamp(34px,4.5vw,58px)/1.05 var(--display);letter-spacing:-.045em;margin:24px 0 20px}
 .thankyou-card .lead{color:#ccc;margin-bottom:36px}
-.thankyou-card .button{margin:0 auto}
+.thankyou-actions{display:flex;flex-direction:column;gap:16px;align-items:center}
+.thankyou-actions .button{width:100%;max-width:340px}
 
 /* Client proof section. */
 .social-proof{background:var(--white);border-top:1px solid #ddd}

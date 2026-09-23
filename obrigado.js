@@ -24,8 +24,11 @@ const selected = copy[status] || copy.approved;
 document.querySelector('#thankyou-title').textContent = selected.title;
 document.querySelector('#thankyou-text').textContent = selected.text;
 
+const isApproved = !status || status === 'approved';
+document.querySelector('#thankyou-whatsapp').hidden = !isApproved;
+
 if (status === 'rejected') {
-  const button = document.querySelector('.thankyou .button');
-  button.href = '/#precheckout';
-  button.innerHTML = 'Tentar novamente <span>→</span>';
+  const backButton = document.querySelector('.thankyou-actions .button-dark');
+  backButton.href = '/#precheckout';
+  backButton.innerHTML = 'Tentar novamente <span>→</span>';
 }
