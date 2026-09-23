@@ -42,19 +42,28 @@ Três tentativas de pagamento de teste falharam antes de dar certo, nenhuma por 
 
 Também foi corrigido nesse processo: `obrigado.js` mostrava "Pagamento confirmado" por padrão quando a URL não tinha o parâmetro de status (ex.: alguém voltando manualmente do checkout sem pagar). Agora só confirma quando `status=approved` de fato.
 
+## Preço corrigido
+
+A conta Mercado Pago da cliente **não tem parcelamento sem juros configurado** — confirmado num checkout real, que cobrou R$339,50 (5x de R$67,90) em vez dos R$297 anunciados. Isso não se resolve por código, é uma configuração da conta dela (Configurações → Meios de recebimento/cobrança → Parcelamento).
+
+Até isso ser configurado, a copy do site foi ajustada pra refletir o valor real: **R$297 à vista** em destaque, "ou 5x de R$67,90 (R$339,50)" como opção parcelada — sem prometer "sem juros".
+
 ## Limpeza já feita
 
 - `api/payments/test-preference.js` (endpoint temporário de diagnóstico) — **removido**.
 - Desvio `?testpay=` no `script.js` — **removido**, formulário sempre usa `create-preference.js` normalmente.
+- `api/admin/cleanup-test-leads.js` (endpoint temporário) — usado para apagar 9 leads de teste do Redis de produção (2 indexados + 7 órfãos que nunca apareceram no painel) e depois **removido**.
 
 ## ⚠️ Pendência de limpeza
 
-A env var `TEST_PAYMENT_SECRET` ainda existe no projeto na Vercel, mas não é mais referenciada em nenhum código — está inofensiva, porém solta. **Remover manualmente** em Vercel → projeto `carol-fonseca` → Settings → Environment Variables (não há endpoint de delete disponível via API neste momento).
+Duas env vars temporárias ainda existem no projeto na Vercel, mas não são mais referenciadas em nenhum código — inofensivas, porém soltas. **Remover manualmente** em Vercel → projeto `carol-fonseca` → Settings → Environment Variables (não há endpoint de delete disponível via API neste momento):
+- `TEST_PAYMENT_SECRET`
+- `CLEANUP_SECRET`
 
-Há também alguns leads de teste soltos no Redis de produção (`Teste Integracao`, `Teste webhook (1 centavo)`, alguns `test-onecent-*`, e o lead real de R$5 usado no teste final) — aparecem no painel admin, sem endpoint de exclusão hoje. Podem ser ignorados ou removidos manualmente via Redis se incomodar.
+O lead real usado no teste final de R$5 (pago de verdade, por alguém sem relação com a conta da cliente) foi mantido no painel admin como `paid` — não é lixo de teste, é um pagamento real que só não corresponde a uma aluna de verdade. Pode marcar como reembolsado/ignorar conforme preferir.
 
 ## Outras pendências / pontos em aberto
 
-- **Parcelamento sem juros:** o site anuncia "5x de R$59,40 sem juros". Isso depende de configuração na própria conta Mercado Pago da cliente (não é algo que o código garanta sozinho) — nunca foi confirmado com ela se está configurado.
+- **Parcelamento sem juros:** decidir com a cliente se vale configurar na conta Mercado Pago (ela passaria a absorver o custo do juro) ou manter a copy atual (R$297 à vista / 5x com juros).
 - **Domínio próprio:** o site está só em `carol-fonseca.vercel.app` (sem domínio customizado). Se um domínio próprio for adicionado depois, nada no código precisa mudar (a origem é detectada dinamicamente pelos headers da requisição), mas vale um teste rápido pós-troca.
 - Não há acesso a logs de runtime da Vercel (`get_runtime_logs`/`get_runtime_errors`) com a conta/token atual — retornam 403. Se precisar depurar erro de servidor no futuro, considerar checar isso primeiro ou usar `console.log` + reprodução manual.
