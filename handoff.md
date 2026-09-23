@@ -1,6 +1,6 @@
 # Handoff — Integração Mercado Pago
 
-Última atualização: 2026-09-23.
+Última atualização: 2026-09-23. Repositório sincronizado com `origin/main`.
 
 ## Status: ✅ Validado e funcionando
 
@@ -57,6 +57,16 @@ Até isso ser configurado, a copy do site foi ajustada pra refletir o valor real
 As env vars temporárias `TEST_PAYMENT_SECRET` e `CLEANUP_SECRET` foram removidas manualmente na Vercel e o projeto foi redeployado (2026-09-23) — nenhuma env var solta restante.
 
 O lead real usado no teste final de R$5 (pago de verdade, por alguém sem relação com a conta da cliente) foi mantido no painel admin como `paid` — não é lixo de teste, é um pagamento real que só não corresponde a uma aluna de verdade. Pode marcar como reembolsado/ignorar conforme preferir.
+
+## Auditoria de segurança (2026-09-23)
+
+Revisão completa pedida ao final do projeto, pra garantir que nada sensível ficou exposto depois de todos os testes:
+
+- **Env vars na Vercel:** só restam as esperadas — `MP_ACCESS_TOKEN`, `MP_WEBHOOK_SECRET`, `ADMIN_PANEL_PASSWORD`, `ADMIN_SESSION_SECRET`, `REDIS_URL`/`KV_*` (integração Redis). Nenhuma variável de teste/diagnóstico sobrando.
+- **Segredos no código:** nenhum token/chave hardcoded encontrado (busca por padrões de API key direto nos arquivos). Nenhum `.env` foi commitado — `.gitignore` cobre `.env`, `.env.local` e `.env*`.
+- **Endpoints da API:** `/api/admin/leads` e `/api/admin/leads/payment` exigem sessão autenticada; `/api/leads` é público com rate limit + honeypot; `/api/payments/webhook` é público mas valida assinatura via `MP_WEBHOOK_SECRET`; `/api/payments/create-preference` é público mas só aceita `leadId` (UUID não adivinhável). Todos os endpoints temporários de diagnóstico já foram removidos do código.
+- **"Portas abertas":** não se aplica — o site roda na Vercel (serverless), sem portas de rede tradicionais expostas; a única superfície são as rotas HTTPS listadas acima.
+- **Histórico do Git:** os commits antigos marcados `TEMP:` continuam no histórico (visíveis no GitHub), mas só referenciam nomes de variáveis (`process.env.X`), nunca o valor real de nenhum segredo. Não foi reescrito (decisão consciente — reescrever histórico exigiria force-push, uma operação destrutiva, e não havia necessidade real já que nada sensível está exposto ali).
 
 ## Outras pendências / pontos em aberto
 
