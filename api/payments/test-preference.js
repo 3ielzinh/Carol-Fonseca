@@ -102,21 +102,34 @@ export default async function handler(request, response) {
   }
 
   const accessToken = process.env.MP_ACCESS_TOKEN;
-  const leadId = `test-onecent-${randomUUID()}`;
-  const now = new Date().toISOString();
+  let body = {};
+  try {
+    body = typeof request.body === 'string' ? JSON.parse(request.body || '{}') : (request.body || {});
+  } catch {
+    body = {};
+  }
 
+  let leadId = String(body.leadId || '').trim();
   const redis = redisClient();
-  await redis.hset(`lead:${leadId}`, {
-    id: leadId,
-    name: 'Teste webhook (1 centavo)',
-    phone: '',
-    email: 'teste-1-centavo@example.com',
-    jobTitle: 'Teste',
-    status: 'precheckout',
-    createdAt: now,
-    updatedAt: now,
-    resubmitCount: 0
-  });
+
+  if (leadId) {
+    const existingLead = await redis.hgetall(`lead:${leadId}`);
+    if (!existingLead || !existingLead.id) return response.status(404).json({ error: 'Lead não encontrado.' });
+  } else {
+    leadId = `test-onecent-${randomUUID()}`;
+    const now = new Date().toISOString();
+    await redis.hset(`lead:${leadId}`, {
+      id: leadId,
+      name: 'Teste webhook (1 centavo)',
+      phone: '',
+      email: 'teste-1-centavo@example.com',
+      jobTitle: 'Teste',
+      status: 'precheckout',
+      createdAt: now,
+      updatedAt: now,
+      resubmitCount: 0
+    });
+  }
 
   const origin = resolveSiteOrigin(request);
   const mpResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
