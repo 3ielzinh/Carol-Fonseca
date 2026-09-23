@@ -54,16 +54,12 @@ Até isso ser configurado, a copy do site foi ajustada pra refletir o valor real
 - Desvio `?testpay=` no `script.js` — **removido**, formulário sempre usa `create-preference.js` normalmente.
 - `api/admin/cleanup-test-leads.js` (endpoint temporário) — usado para apagar 9 leads de teste do Redis de produção (2 indexados + 7 órfãos que nunca apareceram no painel) e depois **removido**.
 
-## ⚠️ Pendência de limpeza
-
-Duas env vars temporárias ainda existem no projeto na Vercel, mas não são mais referenciadas em nenhum código — inofensivas, porém soltas. **Remover manualmente** em Vercel → projeto `carol-fonseca` → Settings → Environment Variables (não há endpoint de delete disponível via API neste momento):
-- `TEST_PAYMENT_SECRET`
-- `CLEANUP_SECRET`
+As env vars temporárias `TEST_PAYMENT_SECRET` e `CLEANUP_SECRET` foram removidas manualmente na Vercel e o projeto foi redeployado (2026-09-23) — nenhuma env var solta restante.
 
 O lead real usado no teste final de R$5 (pago de verdade, por alguém sem relação com a conta da cliente) foi mantido no painel admin como `paid` — não é lixo de teste, é um pagamento real que só não corresponde a uma aluna de verdade. Pode marcar como reembolsado/ignorar conforme preferir.
 
 ## Outras pendências / pontos em aberto
 
-- **Parcelamento sem juros:** decidir com a cliente se vale configurar na conta Mercado Pago (ela passaria a absorver o custo do juro) ou manter a copy atual (R$297 à vista / 5x com juros).
+- **Parcelamento sem juros:** decisão tomada — a cliente optou por manter com juros. Copy do site já reflete isso (R$297 à vista / 5x de R$67,90 com juros). Nada pendente aqui.
 - **Domínio próprio:** o site está só em `carol-fonseca.vercel.app` (sem domínio customizado). Se um domínio próprio for adicionado depois, nada no código precisa mudar (a origem é detectada dinamicamente pelos headers da requisição), mas vale um teste rápido pós-troca.
 - Não há acesso a logs de runtime da Vercel (`get_runtime_logs`/`get_runtime_errors`) com a conta/token atual — retornam 403. Se precisar depurar erro de servidor no futuro, considerar checar isso primeiro ou usar `console.log` + reprodução manual.
