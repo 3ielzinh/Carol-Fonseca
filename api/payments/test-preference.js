@@ -143,7 +143,7 @@ export default async function handler(request, response) {
         title: '[TESTE] Verificação de webhook — Carol Fonseca',
         quantity: 1,
         currency_id: 'BRL',
-        unit_price: 0.01
+        unit_price: 5
       }],
       external_reference: leadId,
       back_urls: {
