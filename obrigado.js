@@ -17,17 +17,20 @@ const copy = {
   rejected: {
     title: 'Não conseguimos confirmar o pagamento.',
     text: 'O pagamento não foi aprovado. Volte ao site e tente novamente com outro cartão ou forma de pagamento.'
+  },
+  '': {
+    title: 'Ainda não recebemos a confirmação do pagamento.',
+    text: 'Se você concluiu o pagamento, aguarde alguns instantes. Se saiu do checkout sem pagar, pode voltar ao site e tentar novamente.'
   }
 };
 
-const selected = copy[status] || copy.approved;
+const selected = copy[status] || copy[''];
 document.querySelector('#thankyou-title').textContent = selected.title;
 document.querySelector('#thankyou-text').textContent = selected.text;
 
-const isApproved = !status || status === 'approved';
-document.querySelector('#thankyou-whatsapp').hidden = !isApproved;
+document.querySelector('#thankyou-whatsapp').hidden = status !== 'approved';
 
-if (status === 'rejected') {
+if (status === 'rejected' || status === '') {
   const backButton = document.querySelector('.thankyou-actions .button-dark');
   backButton.href = '/#precheckout';
   backButton.innerHTML = 'Tentar novamente <span>→</span>';
