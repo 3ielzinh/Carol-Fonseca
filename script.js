@@ -174,14 +174,9 @@ leadForm?.addEventListener('submit', async (event) => {
       source_cta: payload.sourceCta
     });
 
-    const testSecret = params.get('testpay');
-    const preferenceEndpoint = testSecret ? '/api/payments/test-preference' : '/api/payments/create-preference';
-    const preferenceHeaders = { 'Content-Type': 'application/json' };
-    if (testSecret) preferenceHeaders['x-test-secret'] = testSecret;
-
-    const preferenceResponse = await fetch(preferenceEndpoint, {
+    const preferenceResponse = await fetch('/api/payments/create-preference', {
       method: 'POST',
-      headers: preferenceHeaders,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ leadId: result.id })
     });
     const preference = await preferenceResponse.json().catch(() => ({}));
