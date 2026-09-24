@@ -1,6 +1,6 @@
 # Handoff — Integração Mercado Pago
 
-Última atualização: 2026-09-23. Repositório sincronizado com `origin/main`.
+Última atualização: 2026-09-24. Repositório sincronizado com `origin/main`.
 
 ## Status: ✅ Validado e funcionando
 
@@ -21,7 +21,8 @@ O webhook recebeu a notificação, consultou o pagamento na API do Mercado Pago 
 
 - `api/payments/create-preference.js` — recebe `leadId`, busca o lead (Redis ou local), cria a preferência de pagamento no Mercado Pago (R$297, até 5x) e devolve o link de checkout.
 - `api/payments/webhook.js` — recebe a notificação do Mercado Pago, consulta o pagamento pela API, valida a assinatura (`MP_WEBHOOK_SECRET`, se configurada) e atualiza `paymentStatus` do lead para `paid` automaticamente.
-- `obrigado.html` + `obrigado.js` — tela de agradecimento pós-checkout, com mensagem diferente conforme `status` (aprovado/pendente/recusado/ausente) e um botão para entrar no grupo do WhatsApp, exibido só quando o pagamento é aprovado.
+- `obrigado.html` + `obrigado.js` — tela de agradecimento pós-checkout, com mensagem diferente conforme `status` (aprovado/pendente/recusado/ausente) e um botão para entrar no grupo do WhatsApp.
+- `api/payments/group-link.js` — endpoint que confere no Redis (ou local) se o lead está `paid` antes de devolver o link do grupo do WhatsApp. O link **não fica mais no HTML** nem depende do parâmetro de status da URL (que qualquer um podia forjar) — `obrigado.js` busca o link nesse endpoint e só mostra o botão se a resposta vier com sucesso.
 - `script.js` — trocado o redirect fixo da Nubank pela chamada a `create-preference` + redirect para o `initPoint` retornado.
 - `scripts/dev-server.js`, `.env.example`, `README.md` — atualizados para rodar/documentar o fluxo novo localmente.
 - `api/admin/leads/payment.js` — `setLocalPaymentStatus`/`paymentsPathFor` exportados para reuso pelo webhook (modo dev local).
@@ -68,8 +69,20 @@ Revisão completa pedida ao final do projeto, pra garantir que nada sensível fi
 - **"Portas abertas":** não se aplica — o site roda na Vercel (serverless), sem portas de rede tradicionais expostas; a única superfície são as rotas HTTPS listadas acima.
 - **Histórico do Git:** os commits antigos marcados `TEMP:` continuam no histórico (visíveis no GitHub), mas só referenciam nomes de variáveis (`process.env.X`), nunca o valor real de nenhum segredo. Não foi reescrito (decisão consciente — reescrever histórico exigiria force-push, uma operação destrutiva, e não havia necessidade real já que nada sensível está exposto ali).
 
+## Vulnerabilidade corrigida: link do grupo exposto sem pagar (2026-09-24)
+
+Origem: a cliente reportou que uma pessoa pagou e não recebeu o link do grupo. Investigando isso, achamos um problema mais sério: **qualquer pessoa conseguia acessar o link do grupo do WhatsApp sem pagar nada.**
+
+- O link vinha escrito direto no HTML de `obrigado.html`, só "escondido" via CSS (`hidden`) — visível em "Ver código-fonte" independente de status.
+- A exibição do botão dependia só do parâmetro `?status=approved` da própria URL, que qualquer um podia forjar digitando a URL na mão.
+
+**Corrigido:** o link saiu do HTML. Agora `obrigado.js` chama `/api/payments/group-link?lead=<id>`, que confere de verdade no Redis se aquele lead está `paid` antes de devolver o link. Sem pagamento confirmado no banco, a resposta é 403 e nada é revelado.
+
+Isso não resolve por si só o motivo original da pessoa não ter recebido o link (ver próximo tópico), mas fecha a brecha de acesso indevido.
+
 ## Outras pendências / pontos em aberto
 
+- **Entrega do link do grupo não é automática:** hoje o único jeito de alguém receber o link é ficar na tela `/obrigado` depois de pagar (ex.: some se a pessoa fechar a aba, pagar via Pix escaneado de outro aparelho, etc. — foi o que aconteceu com a cliente reportando "pagou e não recebeu"). Solução recomendada: o webhook (que já dispara de forma confiável) enviar um e-mail automático com o link assim que o pagamento é aprovado, em vez de depender da pessoa ver a tela certa. Ainda não implementado.
 - **Parcelamento sem juros:** decisão tomada — a cliente optou por manter com juros. Copy do site já reflete isso (R$297 à vista / 5x de R$67,90 com juros). Nada pendente aqui.
 - **Domínio próprio:** o site está só em `carol-fonseca.vercel.app` (sem domínio customizado). Se um domínio próprio for adicionado depois, nada no código precisa mudar (a origem é detectada dinamicamente pelos headers da requisição), mas vale um teste rápido pós-troca.
 - Não há acesso a logs de runtime da Vercel (`get_runtime_logs`/`get_runtime_errors`) com a conta/token atual — retornam 403. Se precisar depurar erro de servidor no futuro, considerar checar isso primeiro ou usar `console.log` + reprodução manual.
