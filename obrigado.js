@@ -28,7 +28,20 @@ const selected = copy[status] || copy[''];
 document.querySelector('#thankyou-title').textContent = selected.title;
 document.querySelector('#thankyou-text').textContent = selected.text;
 
-document.querySelector('#thankyou-whatsapp').hidden = status !== 'approved';
+const whatsappButton = document.querySelector('#thankyou-whatsapp');
+const leadId = params.get('lead');
+
+if (leadId) {
+  fetch(`/api/payments/group-link?lead=${encodeURIComponent(leadId)}`)
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      if (data?.groupLink) {
+        whatsappButton.href = data.groupLink;
+        whatsappButton.hidden = false;
+      }
+    })
+    .catch(() => {});
+}
 
 if (status === 'rejected' || status === '') {
   const backButton = document.querySelector('.thankyou-actions .button-dark');

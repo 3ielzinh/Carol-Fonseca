@@ -9,6 +9,7 @@ import adminLeadsHandler from '../api/admin/leads.js';
 import adminPaymentHandler from '../api/admin/leads/payment.js';
 import createPreferenceHandler from '../api/payments/create-preference.js';
 import paymentsWebhookHandler from '../api/payments/webhook.js';
+import groupLinkHandler from '../api/payments/group-link.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT || 8765);
@@ -50,7 +51,8 @@ const apiRoutes = {
   '/api/admin/leads': adminLeadsHandler,
   '/api/admin/leads/payment': adminPaymentHandler,
   '/api/payments/create-preference': createPreferenceHandler,
-  '/api/payments/webhook': paymentsWebhookHandler
+  '/api/payments/webhook': paymentsWebhookHandler,
+  '/api/payments/group-link': groupLinkHandler
 };
 
 const server = createServer(async (request, response) => {
