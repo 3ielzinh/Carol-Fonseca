@@ -353,3 +353,15 @@ body.has-dialog{overflow:hidden}
   .field-full{grid-column:auto}
   .precheckout-intro h2{font-size:40px}
 }
+
+/* Hero offer: price and authority visible above the fold. */
+.hero-text strong{color:var(--white)}
+.hero-price{margin:0;color:#bbb;font:500 11px/1.5 var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.hero-price strong{display:block;color:var(--lime);font:700 30px/1 var(--display);letter-spacing:-.03em;text-transform:none;margin-bottom:4px}
+.hero-authority{margin:34px 0 0;padding-top:18px;border-top:1px solid #303030;color:#ddd;font:500 11px/1.6 var(--mono);text-transform:uppercase;letter-spacing:.06em;max-width:620px}
+.hero-authority span{display:block;color:#999}
+.hero-authority{opacity:0;transform:translateY(12px)}
+.is-loaded .hero-authority{animation:soft-rise .65s .68s ease forwards}
+@media(max-width:900px){.hero-authority,.is-loaded .hero-authority{opacity:1;transform:none;animation:none}}
+@media(max-width:600px){.hero-price{text-align:center}.hero-price br{display:none}.hero-authority{font-size:9.5px}}
+@media(prefers-reduced-motion:reduce){.hero-authority,.is-loaded .hero-authority{opacity:1;transform:none;animation:none!important}}
