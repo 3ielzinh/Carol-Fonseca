@@ -173,6 +173,9 @@ leadForm?.addEventListener('submit', async (event) => {
       lead_id: result.id,
       source_cta: payload.sourceCta
     });
+    if (typeof window.fbq === 'function') {
+      window.fbq('track', 'Lead', {}, { eventID: `lead-${result.id}` });
+    }
 
     const preferenceResponse = await fetch('/api/payments/create-preference', {
       method: 'POST',
