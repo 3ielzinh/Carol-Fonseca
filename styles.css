@@ -365,3 +365,4 @@ body.has-dialog{overflow:hidden}
 @media(max-width:900px){.hero-authority,.is-loaded .hero-authority{opacity:1;transform:none;animation:none}}
 @media(max-width:600px){.hero-price{text-align:center}.hero-price br{display:none}.hero-authority{font-size:9.5px}}
 @media(prefers-reduced-motion:reduce){.hero-authority,.is-loaded .hero-authority{opacity:1;transform:none;animation:none!important}}
+.schedule-month-full{grid-column:span 2}
